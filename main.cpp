@@ -56,17 +56,17 @@ int leaveOneOutCrossValidation(std::vector<std::vector<double>> data, const int 
     return rand() % 101; // Generate a random accuracy between 0 and 100
 } 
 
-void forwardSelection(std::vector<std::vector<double>> data) {
+void forwardSelection(std::vector<std::vector<double>> data, const int featureNum) {
     std::vector<int> currentFeatures;
     std::string line = "";
-    for(size_t i = 1; i < data.size(); i++){
+    for(size_t i = 1; i < featureNum+1; i++){
         std::cout << "On the " << i << "th level of the search tree\n";
         size_t featureToAddAtThisLevel = 0;
         int bestSoFarAccuracy = 0;
-        for(size_t j = 1; j < data.size(); j++) {
+        for(size_t j = 1; j < featureNum+1; j++) {
             if(!isFeatureInSet(currentFeatures, j)) {
                 std::cout << "\tConsidering adding the " << j << " feature\n";
-                double accuracy = leaveOneOutCrossValidation(data, j, 1);
+                double accuracy = leaveOneOutCrossValidation(data, j, featureNum);
                 if(accuracy > bestSoFarAccuracy) {
                     bestSoFarAccuracy = accuracy;
                     featureToAddAtThisLevel = j;
@@ -112,7 +112,7 @@ int main() {
 
     srand(static_cast<unsigned>(time(0))); // Seed the random number generator
 
-    forwardSelection(data);
+    forwardSelection(data, featureNum);
     // int accuracy = 0;
     // accuracy = leaveOneOutCrossValidation(data, featureNum, algorithm);
     // std::cout << "Using no features and 'random' evaluation, I get an accuracy of " << accuracy << "%\n";
