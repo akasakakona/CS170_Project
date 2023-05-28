@@ -35,7 +35,7 @@ void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, int 
 //   Print data for verification
 //   for(size_t i = 0; i < data.size(); i++) {
 //     for(size_t j = 0; j < data.at(i).size(); j++) {
-//       std::cout << data.at(i).at(j) << " ";
+//       std::cout << data.at(i).at(j) << "\t";
 //     }
 //     std::cout << std::endl;
 //   }
