@@ -79,7 +79,7 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
 }
 
 int main() {
-    std::cout << "Welcome to Raymond Yuan, Tangyuan Liang, and Miguelangel Tinoco's Feature Selection Algorithm.\n";
+    std::cout << "Welcome to Raymond Yuan, Tangyuan Liang, and Miguelangel Tinoco's Feature Selection Algorithm.\n\n";
 
     int featureNum;
     std::cout << "Please enter the total number of features: ";
@@ -104,11 +104,12 @@ int main() {
     }
 
     int algorithm;
-    std::cout << "Type the number of the algorithm you want to run:\n"
+    std::cout << "\nType the number of the algorithm you want to run:\n"
               << "\t1) Forward Selection\n"
               << "\t2) Backward Elimination\n"
               << "\t3) Special Algorithm\n";
     std::cin >> algorithm;
+    std::cout << std::endl;
 
     srand(static_cast<unsigned>(time(0))); // Seed the random number generator
 
