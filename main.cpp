@@ -16,7 +16,7 @@ void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, int 
         if (!token.empty()) {
             //if we got more columns than expected, that's fine. Just add more columns
             //because if we got 20 features, but expected 10, it doesn't matter, we'll just use the first 10
-            //but if we got less columns than expected, that's a problem
+            //but if we got 5 features, but expected 10, then we have a problem
             try{
                 data.at(column).push_back(std::stod(token));
                 column++;
