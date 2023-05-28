@@ -6,7 +6,7 @@
 #include <vector>
 #include <sstream>
 
-void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, int expectedColumns) {
+void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, const int& expectedColumns) {
   std::string line = "";
   while (std::getline(file, line)) {
     char column = 0;
@@ -41,7 +41,7 @@ void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, int 
 //   }
 }
 
-bool isFeatureInSet(const std::vector<int>& currentFeatures, const int feature) {
+bool isFeatureInSet(const std::vector<int>& currentFeatures, const int& feature) {
     for(size_t i = 0; i < currentFeatures.size(); i++) {
         if(currentFeatures.at(i) == feature) {
             return true;
@@ -51,7 +51,7 @@ bool isFeatureInSet(const std::vector<int>& currentFeatures, const int feature) 
 }
 
 
-int leaveOneOutCrossValidation(std::vector<std::vector<double>> data, const int featureNum, const int algorithm) {
+int leaveOneOutCrossValidation(const std::vector<std::vector<double>> data, const std::vector<int>& currentSet, const int& featureToAdd) {
     // TODO: Implement leave one out cross validation
     return rand() % 101; // Generate a random accuracy between 0 and 100
 } 
@@ -66,7 +66,7 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
         for(size_t j = 1; j < featureNum+1; j++) {
             if(!isFeatureInSet(currentFeatures, j)) {
                 std::cout << "\tConsidering adding the " << j << " feature\n";
-                double accuracy = leaveOneOutCrossValidation(data, j, featureNum);
+                double accuracy = leaveOneOutCrossValidation(data, currentFeatures, featureNum);
                 if(accuracy > bestSoFarAccuracy) {
                     bestSoFarAccuracy = accuracy;
                     featureToAddAtThisLevel = j;
