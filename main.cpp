@@ -66,7 +66,7 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
         for(size_t j = 1; j < featureNum+1; j++) {
             if(!isFeatureInSet(currentFeatures, j)) {
                 std::cout << "\tConsidering adding the " << j << " feature\n";
-                double accuracy = leaveOneOutCrossValidation(data, currentFeatures, featureNum);
+                double accuracy = leaveOneOutCrossValidation(data, currentFeatures, j);
                 if(accuracy > bestSoFarAccuracy) {
                     bestSoFarAccuracy = accuracy;
                     featureToAddAtThisLevel = j;
