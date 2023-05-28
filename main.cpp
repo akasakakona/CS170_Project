@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <limits>
 
 void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, const int& expectedColumns) {
   std::string line = "";
@@ -51,9 +52,37 @@ bool isFeatureInSet(const std::vector<int>& currentFeatures, const int& feature)
 }
 
 
-int leaveOneOutCrossValidation(const std::vector<std::vector<double>> data, const std::vector<int>& currentSet, const int& featureToAdd) {
-    // TODO: Implement leave one out cross validation
-    return rand() % 101; // Generate a random accuracy between 0 and 100
+double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, const std::vector<int>& currentSet, const int& featureToAdd) {
+    // return rand() % 101; // Generate a random accuracy between 0 and 100
+    unsigned correct = 0;
+    for(size_t i = 0; i < data.at(0).size(); i++) {
+        char label = data.at(0).at(i); //column 0 is the label
+        double distance = std::numeric_limits<double>::max();
+        unsigned nearestNeighbor = std::numeric_limits<unsigned>::max();
+        //iterate through all the records (rows)
+        for(size_t j = 0; j < data.at(0).size(); j++) {
+            //if the record is not itself, calculate the distance
+            if(i != j) {
+                double tempDistance = 0;
+                for(size_t k = 0; k < currentSet.size(); k++) {
+                    //we're comparing currentSet.at(k)-th column of i-th record with currentSet.at(k)-th column of j-th record
+                    tempDistance += std::pow(data.at(currentSet.at(k)).at(i) - data.at(currentSet.at(k)).at(j), 2);
+                }
+                //don't forget to compute the distance for the feature we're adding!!!
+                tempDistance += std::pow(data.at(featureToAdd).at(i) - data.at(featureToAdd).at(j), 2);
+                tempDistance = std::sqrt(tempDistance);
+                if(tempDistance < distance) {
+                    distance = tempDistance;
+                    nearestNeighbor = j;
+                }
+            }
+        }
+        if(data.at(0).at(nearestNeighbor) == label) {
+            correct++;
+        }
+    }
+    // std::cout << "\t\tAccuracy: " << static_cast<double>(correct)/data.at(0).size() << std::endl;
+    return static_cast<double>(correct)/data.at(0).size();
 } 
 
 void forwardSelection(std::vector<std::vector<double>> data, const int featureNum) {
@@ -114,8 +143,7 @@ int main() {
     srand(static_cast<unsigned>(time(0))); // Seed the random number generator
 
     forwardSelection(data, featureNum);
-    // int accuracy = 0;
-    // accuracy = leaveOneOutCrossValidation(data, featureNum, algorithm);
+    // double accuracy = leaveOneOutCrossValidation(data, featureNum, algorithm);
     // std::cout << "Using no features and 'random' evaluation, I get an accuracy of " << accuracy << "%\n";
 
     return 0;
