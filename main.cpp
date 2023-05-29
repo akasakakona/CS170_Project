@@ -89,10 +89,11 @@ double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, 
 void forwardSelection(std::vector<std::vector<double>> data, const int featureNum) {
     std::vector<int> currentFeatures;
     std::string line = "";
+    // double bestAccuracy = 0;
     for(size_t i = 1; i < featureNum+1; i++){
         std::cout << "On the " << i << "th level of the search tree\n";
         size_t featureToAddAtThisLevel = 0;
-        int bestSoFarAccuracy = 0;
+        double bestSoFarAccuracy = 0;
         for(size_t j = 1; j < featureNum+1; j++) {
             if(!isFeatureInSet(currentFeatures, j)) {
                 std::cout << "\tConsidering adding the " << j << " feature\n";
@@ -105,10 +106,27 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
         }
         currentFeatures.push_back(featureToAddAtThisLevel);
         std::cout << "On level " << i << " I added feature " << featureToAddAtThisLevel << " to current set\n";
+        // if(bestSoFarAccuracy > bestAccuracy) {
+        //     bestAccuracy = bestSoFarAccuracy;
+        // }else {
+        //     std::cout << "Warning: Accuracy has decreased! Continuing search in case of local maxima from " << bestAccuracy << "% to " << bestSoFarAccuracy << "%\n";
+        //     currentFeatures.pop_back();
+        // }
     }
+    // std::cout << "Finished search!! The best feature subset is ";
+    // for(size_t i = 0; i < currentFeatures.size(); i++) {
+    //     std::cout << currentFeatures.at(i) << " ";
+    // }
+    // std::cout << "which has an accuracy of " << bestAccuracy << "%\n";
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    if(argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <input file>\n";
+        return -1;
+    }
+
     std::cout << "Welcome to Raymond Yuan, Tangyuan Liang, and Miguelangel Tinoco's Feature Selection Algorithm.\n\n";
 
     int featureNum;
@@ -117,7 +135,7 @@ int main() {
 
     std::vector<std::vector<double>> data(featureNum+1);
     //read in files aand pass data vector to parseFeatures
-    std::ifstream file("example.txt");
+    std::ifstream file(argv[1]);
     if(file.is_open()) {
         try{
             //We should have an extra column for the label, so featureNum+1 columns expected
@@ -143,7 +161,9 @@ int main() {
 
     srand(static_cast<unsigned>(time(0))); // Seed the random number generator
 
-    forwardSelection(data, featureNum);
+    std::cout << leaveOneOutCrossValidation(data, {3,5}, 7) << std::endl;
+
+    // forwardSelection(data, featureNum);
     // double accuracy = leaveOneOutCrossValidation(data, featureNum, algorithm);
     // std::cout << "Using no features and 'random' evaluation, I get an accuracy of " << accuracy << "%\n";
 
