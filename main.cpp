@@ -83,21 +83,29 @@ double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, 
         }
     }
     // std::cout << "\t\tAccuracy: " << static_cast<double>(correct)/data.at(0).size() << std::endl;
-    return static_cast<double>(correct)/data.at(0).size();
+    return static_cast<double>(correct)/data.at(0).size()*100;
 } 
 
 void forwardSelection(std::vector<std::vector<double>> data, const int featureNum) {
     std::vector<int> currentFeatures;
     std::string line = "";
-    // double bestAccuracy = 0;
+    double bestAccuracy = 0;
+    std::vector<std::vector<int>> bestFeatures;
+    std::vector<int> bestFeaturesAccuracy;
+    std::cout << "Beginning search.\n\n";
     for(size_t i = 1; i < featureNum+1; i++){
-        std::cout << "On the " << i << "th level of the search tree\n";
+        // std::cout << "On the " << i << "th level of the search tree\n";
         size_t featureToAddAtThisLevel = 0;
         double bestSoFarAccuracy = 0;
         for(size_t j = 1; j < featureNum+1; j++) {
             if(!isFeatureInSet(currentFeatures, j)) {
-                std::cout << "\tConsidering adding the " << j << " feature\n";
+                // std::cout << "\tConsidering adding the " << j << " feature\n";
                 double accuracy = leaveOneOutCrossValidation(data, currentFeatures, j);
+                std::cout << "\t\tUsing feature(s) {";
+                for(size_t k = 0; k < currentFeatures.size(); k++) {
+                    std::cout << currentFeatures.at(k) << ", ";
+                }
+                std::cout << j << "} accuracy is " << accuracy << "%\n";
                 if(accuracy > bestSoFarAccuracy) {
                     bestSoFarAccuracy = accuracy;
                     featureToAddAtThisLevel = j;
@@ -105,7 +113,19 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
             }
         }
         currentFeatures.push_back(featureToAddAtThisLevel);
-        std::cout << "On level " << i << " I added feature " << featureToAddAtThisLevel << " to current set\n";
+        // std::cout << "On level " << i << " I added feature " << featureToAddAtThisLevel << " to current set\n";
+        std::cout << "\nFeature set {";
+        for(size_t k = 0; k < currentFeatures.size()-1; k++) {
+            std::cout << currentFeatures.at(k) << ", ";
+        }
+        try{
+            std::cout << currentFeatures.at(currentFeatures.size()-1);
+        }catch(std::out_of_range& e) {
+            std::cout << "";
+        }
+        std::cout << "} was best, accuracy is " << bestSoFarAccuracy << "%\n\n";
+        bestFeatures.push_back(currentFeatures);
+        bestFeaturesAccuracy.push_back(bestSoFarAccuracy);
         // if(bestSoFarAccuracy > bestAccuracy) {
         //     bestAccuracy = bestSoFarAccuracy;
         // }else {
@@ -118,6 +138,39 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
     //     std::cout << currentFeatures.at(i) << " ";
     // }
     // std::cout << "which has an accuracy of " << bestAccuracy << "%\n";
+    bool decreased = false;
+    bestAccuracy = 0;
+    int bestFeatureSet = 0;
+    for(size_t i = 0; i < bestFeaturesAccuracy.size()-1; i++) {
+        if(bestFeaturesAccuracy.at(i) > bestAccuracy) {
+            bestAccuracy = bestFeaturesAccuracy.at(i);
+            bestFeatureSet = i;
+        }
+        if(bestFeaturesAccuracy.at(i+1) < bestFeaturesAccuracy.at(i)) {
+            decreased = true;
+        }
+    }
+    if(decreased) {
+        std::cout << "{Warning: Accuracy has decreased!}";
+    }
+    std::cout << "\nFinished search!! The best feature subset is {";
+    for(size_t i = 0; i < bestFeatures.at(bestFeatureSet).size()-1; i++) {
+        std::cout << bestFeatures.at(bestFeatureSet).at(i) << ", ";
+    }
+    try{
+        std::cout << bestFeatures.at(bestFeatureSet).at(bestFeatures.at(bestFeatureSet).size()-1);
+    }catch(std::out_of_range& e) {}
+    std::cout << "} which has an accuracy of " << bestAccuracy << "%\n";
+}
+
+void randomEval(const std::vector<std::vector<double>> data){
+    unsigned correct = 0;
+    for(size_t i = 0; i < data.at(0).size(); i++){
+        if(data.at(0).at(i) == rand() % 2 + 1){
+            correct++;
+        }
+    }
+    std::cout << "Using no features and \"random\" evaluation, I get an accuracy of " << static_cast<double>(correct)/data.at(0).size()*100 << "%\n\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -161,9 +214,10 @@ int main(int argc, char* argv[]) {
 
     srand(static_cast<unsigned>(time(0))); // Seed the random number generator
 
-    std::cout << leaveOneOutCrossValidation(data, {3,5}, 7) << std::endl;
+    // std::cout << leaveOneOutCrossValidation(data, {3,5}, 7) << std::endl;
+    randomEval(data);
 
-    // forwardSelection(data, featureNum);
+    forwardSelection(data, featureNum);
     // double accuracy = leaveOneOutCrossValidation(data, featureNum, algorithm);
     // std::cout << "Using no features and 'random' evaluation, I get an accuracy of " << accuracy << "%\n";
 
