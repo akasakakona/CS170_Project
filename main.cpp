@@ -6,6 +6,7 @@
 #include <vector>
 #include <sstream>
 #include <limits>
+#include <math.h>
 
 void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, const int& expectedColumns) {
   std::string line = "";
