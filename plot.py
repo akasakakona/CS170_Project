@@ -25,7 +25,7 @@ with open(filename, 'r') as f:
         # print(line)
         data.append(line)
 
-features = input("Enter the features you want to plot (separated by a space): ").split()
+features = input(f"Enter the features you want to plot (1 to {len(data[0]) - 1} separated by a space): ").split()
 while len(features) != 2:
     print("Please enter only 2 features")
     features = input("Enter the features you want to plot (separated by a space): ").split()
