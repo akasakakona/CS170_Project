@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
-#include <string>
+#include <string.h>
 #include <vector>
 #include <sstream>
 #include <limits>
@@ -39,8 +39,8 @@ void normalize(std::vector<std::vector<double>>& data);
 
 int main(int argc, char* argv[]) {
 
-    if(argc != 2) {
-        std::cout << "Usage: " << argv[0] << " <input file>\n";
+    if(argc != 2 && argc != 3) {
+        std::cout << "Usage: " << argv[0] << " <input file> <optional: normalize>\n";
         return -1;
     }
 
@@ -82,7 +82,10 @@ int main(int argc, char* argv[]) {
     
     //===================== Actual Main Code =====================//
     randomEval(data);
-    normalize(data);
+    if(argc == 3 && strcmp(argv[2], "normalize") == 0) {
+        std::cout << "Normalizing data...\n";
+        normalize(data);
+    }
     auto start = std::chrono::high_resolution_clock::now();
     switch(algorithm) {
         case 1:
