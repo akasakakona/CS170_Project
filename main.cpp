@@ -7,10 +7,13 @@
 #include <sstream>
 #include <limits>
 #include <math.h>
+#include <algorithm>
+
+enum operation {add, del};
 
 void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, const int& expectedColumns);
 bool isFeatureInSet(const std::vector<int>& currentFeatures, const int& feature);
-double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, const std::vector<int>& currentSet, const int& featureToAdd);
+double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, std::vector<int>& currentSet, const int& feature, const operation& op);
 void forwardSelection(std::vector<std::vector<double>> data, const int featureNum);
 void randomEval(const std::vector<std::vector<double>> data);
 void backwardSelection(std::vector<std::vector<double>> data, const int featureNum);
@@ -57,11 +60,45 @@ int main(int argc, char* argv[]) {
     srand(static_cast<unsigned>(time(0))); // Seed the random number generator
 
     // std::cout << leaveOneOutCrossValidation(data, {3,5}, 7) << std::endl;
+    
+    //===================== Actual Main Code =====================//
     randomEval(data);
+    switch(algorithm) {
+        case 1:
+            try{
+                forwardSelection(data, featureNum);
+            }catch(std::exception& e) {
+                std::cout << "Error: " << e.what() << std::endl;
+                return -1;
+            }
+            break;
+        case 2:
+            try{
+                backwardSelection(data, featureNum);
+            }catch(std::exception& e) {
+                std::cout << "Error: " << e.what() << std::endl;
+                return -1;
+            }
+            break;
+        case 3:
+            // specialAlgorithm(data, featureNum);
+            break;
+        default:
+            std::cout << "Invalid algorithm number!\n";
+            return -1;
+    }
+    //=================================================================//
 
-    forwardSelection(data, featureNum);
-    // double accuracy = leaveOneOutCrossValidation(data, featureNum, algorithm);
-    // std::cout << "Using no features and 'random' evaluation, I get an accuracy of " << accuracy << "%\n";
+
+    //========================Testing Code============================//
+    // std::vector<int> currentFeatures = {3, 5};
+    // std::cout << "Using features {3, 5, 7} accuracy is:\n";
+    // std::cout << leaveOneOutCrossValidation(data, currentFeatures, 7, add) << "%\n";
+    //=================================================================//
+    // std::vector<int> currentFeatures = {1, 15};
+    // std::cout << "Using features {1, 15, 27} accuracy is:\n";
+    // std::cout << leaveOneOutCrossValidation(data, currentFeatures, 27, add) << "%\n";
+    //=================================================================//
 
     return 0;
 }
@@ -111,8 +148,19 @@ bool isFeatureInSet(const std::vector<int>& currentFeatures, const int& feature)
 }
 
 
-double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, const std::vector<int>& currentSet, const int& featureToAdd) {
+double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, std::vector<int>& currentSet, const int& feature, const operation& op) {
     // return rand() % 101; // Generate a random accuracy between 0 and 100
+    if(op == add) {
+        currentSet.push_back(feature);
+    }
+    if(op == del) {
+        auto it = std::find(currentSet.begin(), currentSet.end(), feature);
+        if(it != currentSet.end()) {
+            currentSet.erase(it);
+        }else{
+            throw std::runtime_error("leaveOneOutCrossValidation: Feature not found in current set");
+        }
+    }
     unsigned correct = 0;
     for(size_t i = 0; i < data.at(0).size(); i++) {
         char label = data.at(0).at(i); //column 0 is the label
@@ -127,8 +175,6 @@ double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, 
                     //we're comparing currentSet.at(k)-th column of i-th record with currentSet.at(k)-th column of j-th record
                     tempDistance += std::pow(data.at(currentSet.at(k)).at(i) - data.at(currentSet.at(k)).at(j), 2);
                 }
-                //don't forget to compute the distance for the feature we're adding!!!
-                tempDistance += std::pow(data.at(featureToAdd).at(i) - data.at(featureToAdd).at(j), 2);
                 tempDistance = std::sqrt(tempDistance);
                 if(tempDistance < distance) {
                     distance = tempDistance;
@@ -158,16 +204,17 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
         for(size_t j = 1; j < featureNum+1; j++) {
             if(!isFeatureInSet(currentFeatures, j)) {
                 // std::cout << "\tConsidering adding the " << j << " feature\n";
-                double accuracy = leaveOneOutCrossValidation(data, currentFeatures, j);
+                double accuracy = leaveOneOutCrossValidation(data, currentFeatures, j, add);
                 std::cout << "\t\tUsing feature(s) {";
-                for(size_t k = 0; k < currentFeatures.size(); k++) {
+                for(size_t k = 0; k < currentFeatures.size()-1; k++) {
                     std::cout << currentFeatures.at(k) << ", ";
                 }
-                std::cout << j << "} accuracy is " << accuracy << "%\n";
+                std::cout << currentFeatures.back() << "} accuracy is " << accuracy << "%\n";
                 if(accuracy > bestSoFarAccuracy) {
                     bestSoFarAccuracy = accuracy;
                     featureToAddAtThisLevel = j;
                 }
+                currentFeatures.pop_back();
             }
         }
         currentFeatures.push_back(featureToAddAtThisLevel);
@@ -176,12 +223,7 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
         for(size_t k = 0; k < currentFeatures.size()-1; k++) {
             std::cout << currentFeatures.at(k) << ", ";
         }
-        try{
-            std::cout << currentFeatures.at(currentFeatures.size()-1);
-        }catch(std::out_of_range& e) {
-            std::cout << "";
-        }
-        std::cout << "} was best, accuracy is " << bestSoFarAccuracy << "%\n\n";
+        std::cout << currentFeatures.back() << "} was best, accuracy is " << bestSoFarAccuracy << "%\n\n";
         bestFeatures.push_back(currentFeatures);
         bestFeaturesAccuracy.push_back(bestSoFarAccuracy);
         // if(bestSoFarAccuracy > bestAccuracy) {
@@ -215,10 +257,7 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
     for(size_t i = 0; i < bestFeatures.at(bestFeatureSet).size()-1; i++) {
         std::cout << bestFeatures.at(bestFeatureSet).at(i) << ", ";
     }
-    try{
-        std::cout << bestFeatures.at(bestFeatureSet).at(bestFeatures.at(bestFeatureSet).size()-1);
-    }catch(std::out_of_range& e) {}
-    std::cout << "} which has an accuracy of " << bestAccuracy << "%\n";
+    std::cout << bestFeatures.at(bestFeatureSet).back() << "} which has an accuracy of " << bestAccuracy << "%\n";
 }
 
 void randomEval(const std::vector<std::vector<double>> data){
@@ -229,4 +268,75 @@ void randomEval(const std::vector<std::vector<double>> data){
         }
     }
     std::cout << "Using no features and \"random\" evaluation, I get an accuracy of " << static_cast<double>(correct)/data.at(0).size()*100 << "%\n\n";
+}
+
+void backwardSelection(std::vector<std::vector<double>> data, const int featureNum) {
+    std::vector<int> currentFeatures;
+    for(size_t i = 1; i < featureNum+1; i++) {
+        currentFeatures.push_back(i);
+    }
+    std::string line = "";
+    double bestAccuracy = 0;
+    std::vector<std::vector<int>> bestFeatures;
+    std::vector<int> bestFeaturesAccuracy;
+    std::cout << "Beginning search.\n\n";
+    size_t i = 0;
+    while(currentFeatures.size() > 1){
+        // std::cout << "On the " << i << "th level of the search tree\n";
+        size_t featureToRemoveAtThisLevel = 0;
+        double bestSoFarAccuracy = 0;
+        for(size_t j = 1; j < featureNum+1; j++) {
+            if(isFeatureInSet(currentFeatures, j)) {
+                // std::cout << "\tConsidering removing the " << j << " feature\n";
+                //We're setting the feature to -1 because we're not adding any new
+                //features. By setting featureToAdd to -1, we achieve that.
+                double accuracy = leaveOneOutCrossValidation(data, currentFeatures, j, del);
+                std::cout << "\t\tUsing feature(s) {";
+                for(size_t k = 0; k < currentFeatures.size()-1; k++) {
+                    std::cout << currentFeatures.at(k) << ", ";
+                }
+                std::cout << currentFeatures.back() << "} accuracy is " << accuracy << "%\n";
+                if(accuracy > bestSoFarAccuracy) {
+                    bestSoFarAccuracy = accuracy;
+                    featureToRemoveAtThisLevel = j;
+                }
+                currentFeatures.push_back(j);
+            }
+        }
+        auto it = std::find(currentFeatures.begin(), currentFeatures.end(), featureToRemoveAtThisLevel);
+        if(it != currentFeatures.end()) {
+            currentFeatures.erase(it);
+        }else{
+            throw std::runtime_error("backwardSelection: Feature not found in current set");
+        }
+        // std::cout << "On level " << i << " I removed feature " << featureToRemoveAtThisLevel << " from current set\n";
+        std::cout << "\nFeature set {";
+        for(size_t k = 0; k < currentFeatures.size()-1; k++) {
+            std::cout << currentFeatures.at(k) << ", ";
+        }
+        std::cout << currentFeatures.back() << "} was best, accuracy is " << bestSoFarAccuracy << "%\n\n";
+        bestFeatures.push_back(currentFeatures);
+        bestFeaturesAccuracy.push_back(bestSoFarAccuracy);
+        i++;
+    }
+    bool decreased = false;
+    bestAccuracy = 0;
+    int bestFeatureSet = 0;
+    for(size_t i = 0; i < bestFeaturesAccuracy.size()-1; i++) {
+        if(bestFeaturesAccuracy.at(i) > bestAccuracy) {
+            bestAccuracy = bestFeaturesAccuracy.at(i);
+            bestFeatureSet = i;
+        }
+        if(bestFeaturesAccuracy.at(i+1) < bestFeaturesAccuracy.at(i)) {
+            decreased = true;
+        }
+    }
+    if(decreased) {
+        std::cout << "{Warning: Accuracy has decreased!}";
+    }
+    std::cout << "\nFinished search!! The best feature subset is {";
+    for(size_t i = 0; i < bestFeatures.at(bestFeatureSet).size()-1; i++) {
+        std::cout << bestFeatures.at(bestFeatureSet).at(i) << ", ";
+    }
+    std::cout << bestFeatures.at(bestFeatureSet).back() << "} which has an accuracy of " << bestAccuracy << "%\n";
 }
