@@ -2,4 +2,5 @@ a.out
 example.txt
 .vscode
 a.exe
-data/
+test-dataset/
+personal-dataset/
