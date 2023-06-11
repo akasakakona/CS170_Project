@@ -94,10 +94,12 @@ int main(int argc, char* argv[]) {
     // std::vector<int> currentFeatures = {3, 5};
     // std::cout << "Using features {3, 5, 7} accuracy is:\n";
     // std::cout << leaveOneOutCrossValidation(data, currentFeatures, 7, add) << "%\n";
+    // std::cout << "The correct answer is 89%\n";
     //=================================================================//
     // std::vector<int> currentFeatures = {1, 15};
     // std::cout << "Using features {1, 15, 27} accuracy is:\n";
     // std::cout << leaveOneOutCrossValidation(data, currentFeatures, 27, add) << "%\n";
+    // std::cout << "The correct answer is 94.9%\n";
     //=================================================================//
 
     return 0;
@@ -240,11 +242,11 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
     // std::cout << "which has an accuracy of " << bestAccuracy << "%\n";
     bool decreased = false;
     bestAccuracy = 0;
-    int bestFeatureSet = 0;
+    int bestFeatureSet = bestFeaturesAccuracy.front();
     for(size_t i = 0; i < bestFeaturesAccuracy.size()-1; i++) {
-        if(bestFeaturesAccuracy.at(i) > bestAccuracy) {
-            bestAccuracy = bestFeaturesAccuracy.at(i);
-            bestFeatureSet = i;
+        if(bestFeaturesAccuracy.at(i+1) > bestAccuracy) {
+            bestAccuracy = bestFeaturesAccuracy.at(i+1);
+            bestFeatureSet = i+1;
         }
         if(bestFeaturesAccuracy.at(i+1) < bestFeaturesAccuracy.at(i)) {
             decreased = true;
@@ -281,7 +283,7 @@ void backwardSelection(std::vector<std::vector<double>> data, const int featureN
     std::vector<int> bestFeaturesAccuracy;
     std::cout << "Beginning search.\n\n";
     size_t i = 0;
-    while(currentFeatures.size() > 1){
+    for(size_t i = 1; i < featureNum+1; i++){
         // std::cout << "On the " << i << "th level of the search tree\n";
         size_t featureToRemoveAtThisLevel = 0;
         double bestSoFarAccuracy = 0;
@@ -317,15 +319,17 @@ void backwardSelection(std::vector<std::vector<double>> data, const int featureN
         std::cout << currentFeatures.back() << "} was best, accuracy is " << bestSoFarAccuracy << "%\n\n";
         bestFeatures.push_back(currentFeatures);
         bestFeaturesAccuracy.push_back(bestSoFarAccuracy);
-        i++;
+        if(currentFeatures.size() == 1) {
+            break;
+        }
     }
     bool decreased = false;
     bestAccuracy = 0;
-    int bestFeatureSet = 0;
+    int bestFeatureSet = bestFeaturesAccuracy.front();
     for(size_t i = 0; i < bestFeaturesAccuracy.size()-1; i++) {
-        if(bestFeaturesAccuracy.at(i) > bestAccuracy) {
-            bestAccuracy = bestFeaturesAccuracy.at(i);
-            bestFeatureSet = i;
+        if(bestFeaturesAccuracy.at(i+1) > bestAccuracy) {
+            bestAccuracy = bestFeaturesAccuracy.at(i+1);
+            bestFeatureSet = i+1;
         }
         if(bestFeaturesAccuracy.at(i+1) < bestFeaturesAccuracy.at(i)) {
             decreased = true;
