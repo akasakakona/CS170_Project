@@ -9,6 +9,27 @@
 #include <math.h>
 #include <algorithm>
 
+/****************NOTES ABOUT TESTING****************
+ * For small-test-dataset
+ *     forward selection should return {3, 5} as the best feature subset
+ *     backward elimination should return {2, 4, 5, 7, 10} as the best feature subset
+ * For large-test-dataset
+ *     forward selection should return {1, 27} as the best feature subset
+ * When using testing code
+ *    leaveOneOutCrossValidation should return 89% for {3, 5, 7} and 94.9% for {1, 15, 27}
+***************************************************/
+
+/****************TODO LIST****************
+ * Implement special algorithm
+ * Implement Z-score normalization, documentation can be found here: https://www.statology.org/z-score-normalization/
+ *      As stated in "Project 2 - Part II-4.pdf", we MUST normalize our data!!
+ *      Maybe implement a separate normalize(data) function to normalize the data before we do anything else?
+ * After implementing Z-score normalization, test if the program still produces the same results as stated above
+ * Start doing the experiments using our own unique dataset
+ * Implement data visualization, probably using Matplot++ (https://github.com/alandefreitas/matplotplusplus)
+ * Write the report
+*******************************************/
+
 enum operation {add, del};
 
 void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, const int& expectedColumns);
