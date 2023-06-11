@@ -45,5 +45,5 @@ for i in data:
 
 plt.xlabel("Feature " + str(features[0]))
 plt.ylabel("Feature " + str(features[1]))
-plt.title("Plot of Features " + str(features[0]) + " and " + str(features[1]) + " of3\n" + filename)
+plt.title("Plot of Features " + str(features[0]) + " and " + str(features[1]) + " of\n" + filename)
 plt.show()
