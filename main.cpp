@@ -8,6 +8,7 @@
 #include <limits>
 #include <math.h>
 #include <algorithm>
+#include <chrono>
 
 /****************NOTES ABOUT TESTING****************
  * For small-test-dataset
@@ -38,6 +39,7 @@ double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, 
 void forwardSelection(std::vector<std::vector<double>> data, const int featureNum);
 void randomEval(const std::vector<std::vector<double>> data);
 void backwardSelection(std::vector<std::vector<double>> data, const int featureNum);
+void normalize(std::vector<std::vector<double>>& data);
 
 int main(int argc, char* argv[]) {
 
@@ -84,6 +86,8 @@ int main(int argc, char* argv[]) {
     
     //===================== Actual Main Code =====================//
     randomEval(data);
+    normalize(data);
+    auto start = std::chrono::high_resolution_clock::now();
     switch(algorithm) {
         case 1:
             try{
@@ -108,6 +112,9 @@ int main(int argc, char* argv[]) {
             std::cout << "Invalid algorithm number!\n";
             return -1;
     }
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
+    std::cout << "\nTime taken: " << duration.count() << " milliseconds\n";
     //=================================================================//
 
 
@@ -218,7 +225,7 @@ void forwardSelection(std::vector<std::vector<double>> data, const int featureNu
     std::string line = "";
     double bestAccuracy = 0;
     std::vector<std::vector<int>> bestFeatures;
-    std::vector<int> bestFeaturesAccuracy;
+    std::vector<double> bestFeaturesAccuracy;
     std::cout << "Beginning search.\n\n";
     for(size_t i = 1; i < featureNum+1; i++){
         // std::cout << "On the " << i << "th level of the search tree\n";
@@ -301,7 +308,7 @@ void backwardSelection(std::vector<std::vector<double>> data, const int featureN
     std::string line = "";
     double bestAccuracy = 0;
     std::vector<std::vector<int>> bestFeatures;
-    std::vector<int> bestFeaturesAccuracy;
+    std::vector<double> bestFeaturesAccuracy;
     std::cout << "Beginning search.\n\n";
     size_t i = 0;
     for(size_t i = 1; i < featureNum+1; i++){
@@ -364,4 +371,24 @@ void backwardSelection(std::vector<std::vector<double>> data, const int featureN
         std::cout << bestFeatures.at(bestFeatureSet).at(i) << ", ";
     }
     std::cout << bestFeatures.at(bestFeatureSet).back() << "} which has an accuracy of " << bestAccuracy << "%\n";
+}
+
+void normalize(std::vector<std::vector<double>>& data) {
+    //perform z normalization on data
+    for(size_t i = 1; i < data.size(); i++){
+        double mean = 0;
+        double stdDev = 0;
+        for(size_t j = 0; j < data.at(i).size(); j++){
+            mean += data.at(i).at(j);
+        }
+        mean /= data.at(i).size();
+        for(size_t j = 0; j < data.at(i).size(); j++){
+            stdDev += std::pow(data.at(i).at(j) - mean, 2);
+        }
+        stdDev /= data.at(i).size();
+        stdDev = std::sqrt(stdDev);
+        for(size_t j = 0; j < data.at(i).size(); j++){
+            data.at(i).at(j) = (data.at(i).at(j) - mean) / stdDev;
+        }
+    }
 }
