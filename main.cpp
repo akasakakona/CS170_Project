@@ -20,7 +20,6 @@
 ***************************************************/
 
 /****************TODO LIST****************
- * Implement special algorithm
  * Implement Z-score normalization, documentation can be found here: https://www.statology.org/z-score-normalization/
  *      As stated in "Project 2 - Part II-4.pdf", we MUST normalize our data!!
  *      Maybe implement a separate normalize(data) function to normalize the data before we do anything else?
@@ -28,6 +27,7 @@
  * Start doing the experiments using our own unique dataset
  * Implement data visualization, probably using Matplot++ (https://github.com/alandefreitas/matplotplusplus)
  * Write the report
+ * IF time allows, implement special algorithm
 *******************************************/
 
 enum operation {add, del};
