@@ -8,6 +8,64 @@
 #include <limits>
 #include <math.h>
 
+void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, const int& expectedColumns);
+bool isFeatureInSet(const std::vector<int>& currentFeatures, const int& feature);
+double leaveOneOutCrossValidation(const std::vector<std::vector<double>>& data, const std::vector<int>& currentSet, const int& featureToAdd);
+void forwardSelection(std::vector<std::vector<double>> data, const int featureNum);
+void randomEval(const std::vector<std::vector<double>> data);
+void backwardSelection(std::vector<std::vector<double>> data, const int featureNum);
+
+int main(int argc, char* argv[]) {
+
+    if(argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <input file>\n";
+        return -1;
+    }
+
+    std::cout << "Welcome to Raymond Yuan, Tangyuan Liang, and Miguelangel Tinoco's Feature Selection Algorithm.\n\n";
+
+    int featureNum;
+    std::cout << "Please enter the total number of features: ";
+    std::cin >> featureNum;
+
+    std::vector<std::vector<double>> data(featureNum+1);
+    //read in files aand pass data vector to parseFeatures
+    std::ifstream file(argv[1]);
+    if(file.is_open()) {
+        try{
+            //We should have an extra column for the label, so featureNum+1 columns expected
+            parseData(file, data, featureNum+1);
+        }
+        catch(std::exception& e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            return -1;
+        }
+    }
+    else {
+      std::cout << "Unable to open file" << std::endl;
+      return -1;
+    }
+
+    int algorithm;
+    std::cout << "\nType the number of the algorithm you want to run:\n"
+              << "\t1) Forward Selection\n"
+              << "\t2) Backward Elimination\n"
+              << "\t3) Special Algorithm\n";
+    std::cin >> algorithm;
+    std::cout << std::endl;
+
+    srand(static_cast<unsigned>(time(0))); // Seed the random number generator
+
+    // std::cout << leaveOneOutCrossValidation(data, {3,5}, 7) << std::endl;
+    randomEval(data);
+
+    forwardSelection(data, featureNum);
+    // double accuracy = leaveOneOutCrossValidation(data, featureNum, algorithm);
+    // std::cout << "Using no features and 'random' evaluation, I get an accuracy of " << accuracy << "%\n";
+
+    return 0;
+}
+
 void parseData(std::ifstream& file, std::vector<std::vector<double>>& data, const int& expectedColumns) {
   std::string line = "";
   while (std::getline(file, line)) {
@@ -171,55 +229,4 @@ void randomEval(const std::vector<std::vector<double>> data){
         }
     }
     std::cout << "Using no features and \"random\" evaluation, I get an accuracy of " << static_cast<double>(correct)/data.at(0).size()*100 << "%\n\n";
-}
-
-int main(int argc, char* argv[]) {
-
-    if(argc != 2) {
-        std::cout << "Usage: " << argv[0] << " <input file>\n";
-        return -1;
-    }
-
-    std::cout << "Welcome to Raymond Yuan, Tangyuan Liang, and Miguelangel Tinoco's Feature Selection Algorithm.\n\n";
-
-    int featureNum;
-    std::cout << "Please enter the total number of features: ";
-    std::cin >> featureNum;
-
-    std::vector<std::vector<double>> data(featureNum+1);
-    //read in files aand pass data vector to parseFeatures
-    std::ifstream file(argv[1]);
-    if(file.is_open()) {
-        try{
-            //We should have an extra column for the label, so featureNum+1 columns expected
-            parseData(file, data, featureNum+1);
-        }
-        catch(std::exception& e) {
-            std::cout << "Error: " << e.what() << std::endl;
-            return -1;
-        }
-    }
-    else {
-      std::cout << "Unable to open file" << std::endl;
-      return -1;
-    }
-
-    int algorithm;
-    std::cout << "\nType the number of the algorithm you want to run:\n"
-              << "\t1) Forward Selection\n"
-              << "\t2) Backward Elimination\n"
-              << "\t3) Special Algorithm\n";
-    std::cin >> algorithm;
-    std::cout << std::endl;
-
-    srand(static_cast<unsigned>(time(0))); // Seed the random number generator
-
-    // std::cout << leaveOneOutCrossValidation(data, {3,5}, 7) << std::endl;
-    randomEval(data);
-
-    forwardSelection(data, featureNum);
-    // double accuracy = leaveOneOutCrossValidation(data, featureNum, algorithm);
-    // std::cout << "Using no features and 'random' evaluation, I get an accuracy of " << accuracy << "%\n";
-
-    return 0;
 }
